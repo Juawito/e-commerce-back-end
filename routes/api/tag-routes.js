@@ -21,8 +21,8 @@ router.get('/:id', async (req, res) => {
     const tagData = await Tag.findByPk(req.params.id, {
       include: [{ model: Product, through: ProductTag }]
     })
-    if(!tagData) {
-      res.status(404).json({ message: 'This Tag id is not in our database'});
+    if (!tagData) {
+      res.status(404).json({ message: 'This Tag id is not in our database' });
       return
     }
     res.status(200).json(tagData);
@@ -33,12 +33,34 @@ router.get('/:id', async (req, res) => {
   // be sure to include its associated Product data
 });
 
-router.post('/', (req, res) => {
+router.post('/', async (req, res) => {
   // create a new tag
+  try {
+    const newTag = await Tag.create(req.body);
+    if (!newTag) {
+      res.status(400).json({ message: 'Request body format is not compatible' });
+      return
+    }
+    res.status(200).json(newTag);
+  } catch (error) {
+    res.status(500).json(error)
+  }
 });
 
-router.put('/:id', (req, res) => {
+router.put('/:id', async (req, res) => {
   // update a tag's name by its `id` value
+  try {
+    const tagData = await Tag.update(req.body, {
+      where: { id: req.params.id }
+    })
+    if(!tagData){
+      res.status(404).json({ message: 'the tag is not in the database or the body is not compatible'})
+      return
+    }
+    res.status(200).json(tagData)
+  } catch (error) {
+    res.status(500).json(error)
+  }
 });
 
 router.delete('/:id', (req, res) => {
